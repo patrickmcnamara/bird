@@ -5,14 +5,15 @@ It is used to share hyperlinked Seed documents.
 Seed is a simple markup language.
 The birdspace is entirely plaintext, no binary at all.
 
-This repo specifically is a Go library for using Bird protocl and the Seed markup language.
+This repo specifically is a Go library for using Bird protocol and the Seed markup language.
+It also provides `eagle` which is a mix between `curl` and `cat` for documents in the birdspace.
 
 ## Quickstart
 
 ### Bird
 
 Bird is a networking protocol.
-It is incredibly simple and has no error handling whatsover.
+It is incredibly simple and has no error handling whatsoever.
 It is transported on TCP.
 
 A request is simply sending a full URL followed by a newline character to a bird server.
@@ -20,7 +21,7 @@ A response is simply a valid Seed document in reply to the request.
 
 ### Seed document
 
-Seed is a simple markup langauge for documents, similar to Markdown.
+Seed is a simple markup language for documents, similar to Markdown.
 It is completely plaintext and it is line based.
 It does not support embedding, only linking.
 Every line has to end in just a newline character, not CRLF.
