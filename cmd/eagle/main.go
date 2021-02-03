@@ -14,7 +14,7 @@ func main() {
 	for _, rawurl := range os.Args[1:] {
 		quote := false
 		code := false
-		sr, err := bird.Fetch(rawurl)
+		sr, c, err := bird.Fetch(rawurl)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -36,6 +36,8 @@ func main() {
 				}
 			case seed.Header:
 				fmt.Println(strings.Repeat("#", l.Level), l.Text)
+			case seed.Link:
+				fmt.Printf("=> %s (%s)\n", l.Text, l.URL)
 			case seed.Quote:
 				quote = !quote
 			case seed.Code:
@@ -45,5 +47,9 @@ func main() {
 			}
 		}
 		fmt.Println()
+		if err := c(); err != nil {
+			log.Println(err)
+			continue
+		}
 	}
 }
