@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/patrickmcnamara/bird/seed"
 )
@@ -31,7 +32,7 @@ func Fetch(rawurl string) (sr *seed.Reader, close func() (err error), err error)
 		u.Host += ":" + strconv.Itoa(int(DefaultPort))
 	}
 	// connect to Bird server
-	conn, err := net.Dial("tcp", u.Host)
+	conn, err := net.DialTimeout("tcp", u.Host, 5*time.Second)
 	if err != nil {
 		return
 	}
