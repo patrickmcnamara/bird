@@ -42,8 +42,6 @@ func main() {
 				quote = !quote
 			case seed.Code:
 				code = !code
-			case seed.Break:
-				fmt.Println()
 			}
 		}
 		fmt.Println()

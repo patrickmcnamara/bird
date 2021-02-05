@@ -24,7 +24,7 @@ var (
 // Fetch fetches the requested Seed document using Bird.
 //
 // rawurl is a string URL that is protocol-relative, i.e. does not contain a
-// scheme. <pre>bird://hello</pre> is simply <pre>//hello</pre>.
+// scheme. bird://hello is simply //hello.
 //
 // sr is the Seed document reader, close is a function that closes the
 // underlying connection and err is any error in creating a connection to the

@@ -15,11 +15,8 @@ type Link struct {
 	URL  string
 }
 
-// Quote is a quote line and the start or end of a quote block.
+// Quote is a quote marker line.
 type Quote struct{}
 
-// Code is a quote line and the start or end of a code block.
+// Code is a code marker line.
 type Code struct{}
-
-// Break is a break line. It is blank.
-type Break struct{}

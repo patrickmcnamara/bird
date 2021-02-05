@@ -2,11 +2,33 @@ package seed
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"strings"
 )
 
 // Reader reads a Seed document.
+//
+//	sr := seed.NewReader(...)
+//	for {
+//		line, err := sr.ReadLine()
+//		if err == io.EOF {
+//			break
+//		} else if err != nil {
+//			return err
+//		}
+//		switch l := line.(type) {
+//		case seed.Header:
+//			fmt.Printf("header: level=%d text=%q\n", l.Level, l.Text)
+//		case seed.Text:
+//			fmt.Printf("text: text=%s\n", string(l))
+//		default:
+//			fmt.Println("other line type")
+//		}
+//	}
+//
+// As can be seen above, the Reader reads a single line a time and details about
+// the line can be gathered with a type switches or assertions.
 type Reader struct {
 	r  io.Reader
 	br *bufio.Reader
@@ -27,16 +49,10 @@ func (sr *Reader) ReadLine() (line interface{}, err error) {
 	if !sr.c && ls == ">>>" { // quote
 		sr.q = !sr.q
 		line = Quote{}
-		return
 	} else if !sr.q && ls == "```" { // code
 		sr.c = !sr.c
 		line = Code{}
-		return
 	} else if sr.InBlock() {
-		return
-	} else if ls == "" { // break
-		line = Break{}
-		return
 	} else if len(ls) > 3 && ls[:3] == "=> " { // link
 		parts := strings.Split(ls[3:], "|||")
 		if len(parts) == 2 {
@@ -45,8 +61,7 @@ func (sr *Reader) ReadLine() (line interface{}, err error) {
 				URL:  strings.TrimPrefix(parts[1], " "),
 			}
 		}
-		return
-	} else if len(ls) > 2 && ls[0] == '#' {
+	} else if len(ls) > 2 && ls[0] == '#' { // header
 		parts := strings.SplitN(ls, " ", 2)
 		header := parts[0]
 		level := 0
@@ -62,7 +77,6 @@ func (sr *Reader) ReadLine() (line interface{}, err error) {
 				Text:  parts[1],
 			}
 		}
-		return
 	}
 	return
 }
@@ -79,7 +93,12 @@ func (sr *Reader) ReadBlock() (txts []Text, err error) {
 		if err != nil && err != io.EOF {
 			return
 		}
-		txts = append(txts, line.(Text))
+		txt, ok := line.(Text)
+		if !ok { // not possible ¯\_(ツ)_/¯
+			err = errors.New("non text line found in block")
+			return
+		}
+		txts = append(txts, txt)
 		if err == io.EOF {
 			break
 		}
