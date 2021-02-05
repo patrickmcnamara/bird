@@ -3,7 +3,6 @@ package bird
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -13,18 +12,10 @@ import (
 	"github.com/patrickmcnamara/bird/seed"
 )
 
-var (
-	// ErrProtocolRelativeURL indicates that the URL given was not relative to
-	// the bird:// scheme.
-	ErrProtocolRelativeURL = errors.New("URL should be protocol relative and have no scheme")
-	// ErrNoHostURL indicates that the URL given was missing the host.
-	ErrNoHostURL = errors.New("URL should have host")
-)
-
 // Fetch fetches the requested Seed document using Bird.
 //
-// rawurl is a string URL that is protocol-relative, i.e. does not contain a
-// scheme. bird://hello is simply //hello.
+// rawurl is a URL that is protocol-relative URL without a trailing slash.
+// "bird://hello/world/" is simply "//hello/world".
 //
 // sr is the Seed document reader, close is a function that closes the
 // underlying connection and err is any error in creating a connection to the

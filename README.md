@@ -8,6 +8,7 @@ The birdspace is entirely plaintext, no binary at all (as God intended).
 This repository specifically is a Go library for using Bird protocol and the Seed markup language.
 It is the refence implementation of both.
 It also provides `eagle` which is a mix between `curl` and `cat` for documents in the birdspace.
+It also also provides the library and binary `owl` which allows you to easily host a Bird protocol file server.
 
 ## Quickstart
 
@@ -17,7 +18,7 @@ Bird is a request-response networking protocol for the birdspace.
 It is incredibly simple and has no error handling whatsoever.
 It is transported on TCP.
 
-A request is simply sending a Bird protocol-relative URL followed by a newline character to a bird server.
+A request is simply sending a Bird protocol-relative URL without a trailing slash followed by a newline character to a bird server.
 A response is simply a valid Seed document in reply to the request.
 
 ### Seed document
@@ -29,7 +30,7 @@ Every line has to end in just a newline character, not CRLF.
 
 ## Other Documentation
 
-- [Bird Specification](#bird) :)
+- [Bird Specification](#bird-protocol) :)
 - [Bird Library](https://pkg.go.dev/github.com/patrickmcnamara/bird)
 - [Seed Specification](./seed/README.md)
 - [Seed Library](https://pkg.go.dev/github.com/patrickmcnamara/bird/seed)

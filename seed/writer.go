@@ -72,7 +72,7 @@ func (sw *Writer) Link(txt, url string) (err error) {
 		err = ErrBadLine
 		return
 	}
-	_, err = fmt.Fprintf(sw.w, "=> %s [%s]\n", txt, url)
+	_, err = fmt.Fprintf(sw.w, "=> %s ||| %s\n", txt, url)
 	return
 }
 
