@@ -4,7 +4,6 @@ package owl
 import (
 	"errors"
 	"io/fs"
-	"log"
 	"net/url"
 
 	"github.com/patrickmcnamara/bird/seed"
@@ -12,107 +11,89 @@ import (
 
 // FileServer is a seed.Handler that can serve Seed documents from a filesystem.
 //
-// FS is the filesystem used and Logger is the logger used for internal errors.
+// FS is the filesystem used and ErrHn is used to handle errors.
 type FileServer struct {
-	FS     fs.FS
-	Logger *log.Logger
+	FS    fs.FS
+	ErrHn ErrorHandler
 }
 
-// NewFileServer creates a new FileServer for fsys.
-func NewFileServer(fsys fs.FS) *FileServer {
-	return &FileServer{FS: fsys, Logger: log.Default()}
+// NewFileServer creates a new FileServer for fsys registering errHn as the
+// error handler. errHn can be nil.
+func NewFileServer(fsys fs.FS, errHn ErrorHandler) (fsrv *FileServer, err error) {
+	if fsys == nil {
+		err = errors.New("owl: NewFileServer: nil filesystem")
+		return
+	}
+	fsrv = &FileServer{FS: fsys, ErrHn: errHn}
+	return
 }
 
 // ServeBird serves the requested Seed document.
 //
-// If the requested filename does not end in seed.Extension, that will be
-// appended to the filename before finding the file. This means that only files with
-// the ".sd" extension will be served. It also means that a file named ".sd" can
-// be used as an "index" for that directory. If this index file does not exist,
-// it will be automatically generated.
+// Only files that end in seed.Extension are served. If the a Bird request URL
+// path does not end in seed.Extension, it will be appended to it before
+// finding the file. If a directory has a file in it named seed.Extension, it is
+// used as the "index" for that directory.
 //
 // Filesystem:
-//	alice
-//	alice/.sd
-//	bob
-//	bob/hello.sd
-//	bob/world.sd
-//	charles
-//	charles/foobar.sd
-//	charles.sd
+//	abc
+//	abc/.sd
+//	abc/1.sd
+//	xyz
+//	xyz/.sd
+//	xyz.sd
 //
-// In this case, FileServer would return the "alice/.sd" doc for "alice" but
-// will generate an index for "bob" as it does not have a ".sd" file. "charles"
-// would return the "charles.sd" doc. "bob/hello" and "bob/hello.sd" would both
-// return the "bob/hello.sd" doc.
+// For this filesystem, where "*" is the host, ServeBird would respond as such:
+//	bird://*/abc       ->  abc/.sd
+//	bird://*/abc/.sd   ->  abc/.sd
+//	bird://*/abc/1     ->  abc/1.sd
+//	bird://*/abc/1.sd  ->  abc/1.sd
+//	bird://*/xyz       ->  xyz.sd
 //
-// If a requested file does not exist, ServeBird will return an error in response
-// saying so. If a different error occurs, ServeBird will log it using Logger.
+// If there is an error while opening a requested file, ErrHn is called using the
+// u, sw from the request and the error that occured. If the ErrHn is nil, the
+// error is skipped and no response is made.
 func (fsrv *FileServer) ServeBird(u *url.URL, sw *seed.Writer) {
-	// try find file/dir with extension or without
-	pth1, pth2 := paths(u.Path)
+	// open correct file
+	f, err := fsrv.open(u.Path)
+	// check for errors with file opening
+	if err != nil {
+		fsrv.errHn(u, sw, err)
+		return
+	}
+	// serve file
+	sr := seed.NewReader(f)
+	seed.Copy(sw, sr)
+}
+
+// open opens a file given a path, including logic described in ServeBird. It
+// purposefully does not conform to fs.FS.
+func (fsrv *FileServer) open(name string) (f fs.File, err error) {
+	// bad file but continue  B)
+	bfbc := func(fi fs.FileInfo, err error) bool {
+		return errors.Is(err, fs.ErrNotExist) || err == nil && fi.IsDir()
+	}
+	// possible paths, i.e. hello.sd and hello/.sd
+	pth1, pth2 := paths(name)
+	// find a good file if it exists
 	pth := pth1
-	f, err := fsrv.FS.Open(pth)
-	if errors.Is(err, fs.ErrNotExist) {
+	fi, err := fs.Stat(fsrv.FS, pth)
+	if bfbc(fi, err) {
 		pth = pth2
-		f, err = fsrv.FS.Open(pth)
-		if errors.Is(err, fs.ErrNotExist) {
-			notExist(u, sw)
-			return
-		} else if err != nil {
-			fsrv.internalLog(u, err)
+		fi, err = fs.Stat(fsrv.FS, pth)
+		if bfbc(fi, err) {
+			err = fs.ErrNotExist
 			return
 		}
-	} else if err != nil {
-		fsrv.internalLog(u, err)
-		return
 	}
-	fi, err := f.Stat()
-	if err != nil {
-		fsrv.internalLog(u, err)
-		return
-	}
-
-	// handle based on whether a file or dir was found
-	if fi.IsDir() {
-		index(u, sw, fsrv.FS, pth)
-		return
-	} else if err := seed.Copy(sw, seed.NewReader(f)); err != nil {
-		fsrv.internalLog(u, err)
-		return
-	}
-}
-
-// internalLog logs a URL and error.
-func (fsrv *FileServer) internalLog(u *url.URL, err error) {
-	fsrv.Logger.Printf("%s: %s", u, err)
-}
-
-// index writes the index of a directory to sw.
-func index(u *url.URL, sw *seed.Writer, fsys fs.FS, pth string) (err error) {
-	sw.Header(1, u.String())
-	sw.Text("")
-	ents, err := fs.ReadDir(fsys, pth)
-	if err != nil {
-		return
-	}
-	for _, ent := range ents {
-		sw.Link(ent.Name(), relPath(ent.Name()))
-	}
-	if len(ents) < 1 {
-		sw.Text("This directory is empty.")
-	}
+	// open file and return
+	f, err = fsrv.FS.Open(pth)
 	return
-
 }
 
-// notExist writes a file does not exist error message to sw.
-func notExist(u *url.URL, sw *seed.Writer) {
-	sw.Header(1, "ERROR")
-	sw.Text("")
-	sw.Code()
-	sw.Text(u.String())
-	sw.Code()
-	sw.Text("")
-	sw.Text("This file does not exist.")
+// errHn calls ErrHn if it's not nil.
+func (fsrv *FileServer) errHn(u *url.URL, sw *seed.Writer, err error) {
+	if fsrv.ErrHn != nil {
+		fsrv.ErrHn(u, sw, err)
+	}
 }

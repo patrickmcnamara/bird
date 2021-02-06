@@ -7,40 +7,39 @@ import (
 	"github.com/patrickmcnamara/bird/seed"
 )
 
-func clean(pth string) string {
-	pth = path.Clean(pth)
-	pth = strings.TrimPrefix(pth, "/")
-	pth = strings.TrimSuffix(pth, "/")
-	return pth
-}
-
-func withSeedExt(pth string) string {
-	if pth == "." {
-		pth = seed.Extension
-	} else if path.Ext(pth) != seed.Extension {
-		pth += seed.Extension
+func seedExt(pth string) string {
+	if path.Ext(pth) == seed.Extension {
+		return pth
 	}
-	return pth
+	if path.Base(pth) == "." {
+		return seed.Extension
+	}
+	return pth + seed.Extension
 }
 
-func withoutSeedExt(pth string) string {
-	pth = strings.TrimSuffix(pth, seed.Extension)
-	pth = clean(pth)
-	if pth == "" {
-		pth = "."
+func index(pth string) string {
+	if path.Base(pth) == seed.Extension {
+		return pth
+	}
+	if path.Base(pth) == "." {
+		return seed.Extension
+	}
+	if path.Ext(pth) == seed.Extension {
+		pth = strings.TrimSuffix(pth, seed.Extension)
+	}
+	return path.Join(pth, seed.Extension)
+}
+
+func relPath(pth string) string {
+	if !strings.HasSuffix(pth, "./") {
+		return "./" + pth
 	}
 	return pth
 }
 
 func paths(pth string) (pth1, pth2 string) {
-	pth1 = clean(withSeedExt(pth))
-	pth2 = clean(withoutSeedExt(pth))
+	pth = path.Clean(strings.TrimPrefix(pth, "/"))
+	pth1 = seedExt(pth)
+	pth2 = index(pth)
 	return
-}
-
-func relPath(pth string) string {
-	if !strings.HasSuffix(pth, "./") {
-		pth = "./" + pth
-	}
-	return pth
 }
