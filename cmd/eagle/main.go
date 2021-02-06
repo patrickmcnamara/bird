@@ -11,7 +11,7 @@ import (
 
 func main() {
 	sw := seed.NewWriter(os.Stdout)
-	for _, rawurl := range os.Args[1:] {
+	for i, rawurl := range os.Args[1:] {
 		sr, c, err := bird.Fetch(rawurl)
 		if err != nil {
 			log.Println(err)
@@ -21,10 +21,12 @@ func main() {
 			log.Println(err)
 			continue
 		}
-		fmt.Println()
 		if err := c(); err != nil {
 			log.Println(err)
 			continue
+		}
+		if i != len(os.Args)-2 {
+			fmt.Println()
 		}
 	}
 }
