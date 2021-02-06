@@ -15,8 +15,8 @@ import (
 
 // Fetch fetches the requested Seed document using Bird.
 //
-// rawurl is a URL that is protocol-relative URL without a trailing slash.
-// "bird://hello/world/" is simply "//hello/world".
+// rawurl is a URL that is protocol-relative URL without a trailing slashes.
+// bird://hello/world/ is simply //hello/world.
 //
 // sr is the Seed document reader, close is a function that closes the
 // underlying connection and err is any error in creating a connection to the
@@ -67,7 +67,8 @@ func Serve(address string, h Handler) (err error) {
 	}
 }
 
-// serve parses, validates and handles a Bird request.
+// serve parses, validates and handles a Bird request and closes the connection
+// after it is done.
 func serve(rwc io.ReadWriteCloser, h Handler) {
 	// close connection when done
 	defer rwc.Close()

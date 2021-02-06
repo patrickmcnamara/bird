@@ -30,10 +30,10 @@ func NewFileServer(fsys fs.FS, errHn ErrorHandler) (fsrv *FileServer, err error)
 
 // ServeBird serves the requested Seed document.
 //
-// Only files that end in seed.Extension are served. If the a Bird request URL
-// path does not end in seed.Extension, it will be appended to it before
-// finding the file. If a directory has a file in it named seed.Extension, it is
-// used as the "index" for that directory.
+// Only files that end in seed.Extension are served. If the Bird request URL path
+// does not end in seed.Extension, it will be appended before finding the file. If
+// the URL path refers to a directory, a file with the name seed.Extension will
+// be served if it exists.
 //
 // Filesystem:
 //	abc
@@ -43,16 +43,16 @@ func NewFileServer(fsys fs.FS, errHn ErrorHandler) (fsrv *FileServer, err error)
 //	xyz/.sd
 //	xyz.sd
 //
-// For this filesystem, where "*" is the host, ServeBird would respond as such:
+// For this filesystem, where * is the host, ServeBird would respond as such:
 //	bird://*/abc       ->  abc/.sd
 //	bird://*/abc/.sd   ->  abc/.sd
 //	bird://*/abc/1     ->  abc/1.sd
 //	bird://*/abc/1.sd  ->  abc/1.sd
 //	bird://*/xyz       ->  xyz.sd
 //
-// If there is an error while opening a requested file, ErrHn is called using the
-// u, sw from the request and the error that occured. If the ErrHn is nil, the
-// error is skipped and no response is made.
+// If an error occurs opening a requested file, ErrHn is called using the error
+// and u and sw from the request and the error that occured. If ErrHn is nil,
+// the error is skipped and no response is made.
 func (fsrv *FileServer) ServeBird(u *url.URL, sw *seed.Writer) {
 	// open correct file
 	f, err := fsrv.open(u.Path)

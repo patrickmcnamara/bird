@@ -1,3 +1,12 @@
+// Command owl starts a basic Bird protocol file server using owl.FileServer for
+// the directory it is run in.
+//
+// Only files with the extension seed.Extension are served, as described in the
+// docs for owl.FileServer.
+//
+// If a requested file does not exist, owl will respond to the Bird request
+// saying as much. If there is a different file I/O error, owl will respond
+// saying that the file could not be served and log the error.
 package main
 
 import (

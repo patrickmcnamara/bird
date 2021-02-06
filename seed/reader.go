@@ -27,8 +27,8 @@ import (
 //		}
 //	}
 //
-// As can be seen above, the Reader reads a single line a time and details about
-// the line can be gathered with a type switches or assertions.
+// As can be seen above, the Reader reads a single line at a time. Type switches
+// or type assertions can be to gather info on the line.
 type Reader struct {
 	r  io.Reader
 	br *bufio.Reader
@@ -36,7 +36,7 @@ type Reader struct {
 	c  bool // code block
 }
 
-// NewReader reads a Seed document from r.
+// NewReader returns a new Reader reading from r.
 func NewReader(r io.Reader) *Reader {
 	return &Reader{r: r, br: bufio.NewReader(r)}
 }

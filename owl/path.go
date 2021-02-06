@@ -7,6 +7,7 @@ import (
 	"github.com/patrickmcnamara/bird/seed"
 )
 
+// seedExt adds seed.Extension to a path if it's not already there.
 func seedExt(pth string) string {
 	if path.Ext(pth) == seed.Extension {
 		return pth
@@ -17,6 +18,7 @@ func seedExt(pth string) string {
 	return pth + seed.Extension
 }
 
+// index returns valid "index" path for the given path.
 func index(pth string) string {
 	if path.Base(pth) == seed.Extension {
 		return pth
@@ -30,13 +32,7 @@ func index(pth string) string {
 	return path.Join(pth, seed.Extension)
 }
 
-func relPath(pth string) string {
-	if !strings.HasSuffix(pth, "./") {
-		return "./" + pth
-	}
-	return pth
-}
-
+// paths returns both valid paths given path.
 func paths(pth string) (pth1, pth2 string) {
 	pth = path.Clean(strings.TrimPrefix(pth, "/"))
 	pth1 = seedExt(pth)

@@ -59,7 +59,7 @@ func (sw *Writer) Header(level int, txt string) (err error) {
 		return
 	}
 	if level < 1 || level > 6 {
-		err = ErrBadHeader
+		err = ErrInvalidHeaderLvl
 		return
 	}
 	_, err = fmt.Fprintf(sw.w, "%s %s\n", strings.Repeat("#", level), txt)
