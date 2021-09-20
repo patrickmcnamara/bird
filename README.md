@@ -18,7 +18,7 @@ Bird is a request-response networking protocol for the birdspace.
 It is incredibly simple and has no error handling whatsoever.
 It is transported on TCP.
 
-A request is simply sending a Bird protocol-relative URL without a trailing slash followed by a newline character to a bird server.
+A request is simply sending a Bird protocol-relative URL without a trailing slash followed by a newline character to a Bird server.
 A response is simply a valid Seed document in reply to the request.
 
 ### Seed document

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +14,7 @@ import (
 
 // Fetch fetches the requested Seed document using Bird.
 //
-// rawurl is a URL that is protocol-relative URL without a trailing slashes.
+// rawurl is a Bird URL that is protocol-relative and without a trailing slash.
 // bird://hello/world/ is simply //hello/world.
 //
 // sr is the Seed document reader, close is a function that closes the
@@ -23,13 +22,9 @@ import (
 // Bird server.
 func Fetch(rawurl string) (sr *seed.Reader, close func() (err error), err error) {
 	// parse and validate url
-	u, err := parseURL(rawurl)
+	u, err := parseURL(rawurl, true)
 	if err != nil {
 		return
-	}
-	// add default port if none defined
-	if u.Port() == "" {
-		u.Host += ":" + strconv.Itoa(int(DefaultPort))
 	}
 	// connect to Bird server
 	conn, err := net.DialTimeout("tcp", u.Host, 5*time.Second)
@@ -79,7 +74,7 @@ func serve(rwc io.ReadWriteCloser, h Handler) {
 		return
 	}
 	rawurl = strings.TrimSuffix(rawurl, "\n")
-	u, err := parseURL(rawurl)
+	u, err := parseURL(rawurl, false)
 	if err != nil {
 		return
 	}

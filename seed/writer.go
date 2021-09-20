@@ -106,7 +106,7 @@ func (sw *Writer) Code() (err error) {
 
 // Line adds a line to w. The type of this line is determined by the given line.
 // If line is a not a valid line type, err is ErrBadLine.
-func (sw *Writer) Line(line interface{}) (err error) {
+func (sw *Writer) Line(line Line) (err error) {
 	switch l := line.(type) {
 	case Text:
 		err = sw.Text(string(l))

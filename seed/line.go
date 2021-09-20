@@ -1,5 +1,8 @@
 package seed
 
+// Line is a Seed document line.
+type Line interface{}
+
 // Text is a text line. It is a string.
 type Text string
 

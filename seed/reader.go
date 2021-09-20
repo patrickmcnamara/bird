@@ -42,7 +42,7 @@ func NewReader(r io.Reader) *Reader {
 }
 
 // ReadLine reads a single line from r.
-func (sr *Reader) ReadLine() (line interface{}, err error) {
+func (sr *Reader) ReadLine() (line Line, err error) {
 	ls, err := sr.br.ReadString('\n')
 	ls = strings.TrimSuffix(ls, "\n")
 	line = Text(ls)
@@ -88,7 +88,7 @@ func (sr *Reader) ReadBlock() (txts []Text, err error) {
 		return
 	}
 	for {
-		var line interface{}
+		var line Line
 		line, err = sr.ReadLine()
 		if err != nil && err != io.EOF {
 			return

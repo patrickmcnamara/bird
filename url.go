@@ -3,6 +3,7 @@ package bird
 import (
 	"errors"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -18,8 +19,8 @@ var (
 )
 
 // parseURL parses and validates a URL such that it conforms with Bird's
-// requirements.
-func parseURL(rawurl string) (u *url.URL, err error) {
+// requirements. If defaultPort is true, parseURL will add DefaultPort to u.
+func parseURL(rawurl string, defaultPort bool) (u *url.URL, err error) {
 	u, err = url.Parse(rawurl)
 	if err != nil {
 		return
@@ -35,6 +36,9 @@ func parseURL(rawurl string) (u *url.URL, err error) {
 	if strings.HasSuffix(u.Path, "/") {
 		err = ErrTrailingSlashURL
 		return
+	}
+	if defaultPort && u.Port() == "" {
+		u.Host += ":" + strconv.Itoa(int(DefaultPort))
 	}
 	return
 }

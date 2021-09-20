@@ -1,4 +1,5 @@
-// Package owl provides an implementation of a file server for the Bird protocol.
+// Package owl provides an implementation of a file server for the Bird
+// protocol.
 package owl
 
 import (
@@ -30,10 +31,9 @@ func NewFileServer(fsys fs.FS, errHn ErrorHandler) (fsrv *FileServer, err error)
 
 // ServeBird serves the requested Seed document.
 //
-// Only files that end in seed.Extension are served. If the Bird request URL path
-// does not end in seed.Extension, it will be appended before finding the file. If
-// the URL path refers to a directory, a file with the name seed.Extension will
-// be served if it exists.
+// Only files that end in seed.Extension are served. However, Bird request URLs
+// must omit the extension. If the URL path refers to a directory, a file with
+// the name of just seed.Extension will be served if it exists.
 //
 // Filesystem:
 //	abc
@@ -45,9 +45,7 @@ func NewFileServer(fsys fs.FS, errHn ErrorHandler) (fsrv *FileServer, err error)
 //
 // For this filesystem, where * is the host, ServeBird would respond as such:
 //	bird://*/abc       ->  abc/.sd
-//	bird://*/abc/.sd   ->  abc/.sd
 //	bird://*/abc/1     ->  abc/1.sd
-//	bird://*/abc/1.sd  ->  abc/1.sd
 //	bird://*/xyz       ->  xyz.sd
 //
 // If an error occurs opening a requested file, ErrHn is called using the error

@@ -12,7 +12,7 @@ const (
 // an error occurs. err == nil on a successful Copy.
 func Copy(sw *Writer, sr *Reader) (err error) {
 	for {
-		var line interface{}
+		var line Line
 		if line, err = sr.ReadLine(); err == io.EOF {
 			err = nil
 			return
