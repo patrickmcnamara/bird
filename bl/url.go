@@ -9,9 +9,11 @@ const (
 
 // ToURL converts a BL to a *url.URL.
 func ToURL(b BL) (u *url.URL) {
-	u.Scheme = Scheme
-	u.Host = b.Host
-	u.Path = b.Path
+	u = &url.URL{
+		Scheme: Scheme,
+		Host:   b.Host,
+		Path:   b.Path,
+	}
 	return
 }
 
