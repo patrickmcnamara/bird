@@ -1,8 +1,8 @@
 // Command eagle makes Bird protocol requests.
 //
-// eagle requests each URL given as command line arguments and prints the
-// responses. If there is an error, eagle logs the error and exits the program
-// with status 1.
+// eagle requests each Bird page from each BL given as command line arguments
+// and prints the Bird page. If there is an error, eagle prints the error and
+// exits the program with status 1.
 package main
 
 import (
@@ -15,8 +15,8 @@ import (
 
 func main() {
 	sw := seed.NewWriter(os.Stdout)
-	for _, rawurl := range os.Args[1:] {
-		sr, c, err := bird.Fetch(rawurl)
+	for _, rawBL := range os.Args[1:] {
+		sr, c, err := bird.Fetch(rawBL)
 		chk(err)
 		err = seed.Copy(sw, sr)
 		chk(err)
@@ -27,7 +27,7 @@ func main() {
 
 func chk(err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "owl: "+err.Error())
+		fmt.Fprintln(os.Stderr, "eagle: "+err.Error())
 		os.Exit(1)
 	}
 }

@@ -4,42 +4,50 @@
 // Only files with the extension seed.Extension are served, as described in the
 // docs for owl.FileServer.
 //
-// If a requested file does not exist, owl will respond to the Bird request
-// saying as much. If there is a different file I/O error, owl will respond
-// saying that the file could not be served and log the error.
+// If a requested file does not exist or there is a permission error, owl will
+// respond to the Bird request saying as much. If there is a different file I/O
+// error, owl will respond saying that the file could not be served.
 package main
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
-	"log"
-	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/patrickmcnamara/bird"
+	"github.com/patrickmcnamara/bird/bl"
 	"github.com/patrickmcnamara/bird/owl"
 	"github.com/patrickmcnamara/bird/seed"
 )
 
 func main() {
 	fsrv, _ := owl.NewFileServer(os.DirFS("."), errHn)
-	if err := bird.Serve(":"+strconv.Itoa(int(bird.DefaultPort)), fsrv); err != nil {
-		log.Fatalln(err)
-	}
+	err := bird.Serve(":"+strconv.Itoa(int(bird.DefaultPort)), fsrv)
+	chk(err)
 }
 
-func errHn(u *url.URL, sw *seed.Writer, err error) {
+func errHn(b bl.BL, sw *seed.Writer, err error) {
 	sw.Header(1, "ERROR")
 	sw.Text("")
 	sw.Code()
-	sw.Text(u.String())
+	sw.Text(b.Path)
 	sw.Code()
 	sw.Text("")
-	if errors.Is(err, fs.ErrNotExist) {
+	if errors.Is(err, fs.ErrNotExist) || strings.Contains(err.Error(), "not a directory") {
 		sw.Text("File does not exist.")
+	} else if errors.Is(err, fs.ErrPermission) {
+		sw.Text("File is verboten.")
 	} else {
 		sw.Text("File couldn't be opened.")
-		log.Printf("%s: %s", u, err)
+	}
+}
+
+func chk(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "owl: "+err.Error())
+		os.Exit(1)
 	}
 }

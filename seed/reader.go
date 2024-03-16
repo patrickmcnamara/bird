@@ -2,7 +2,6 @@ package seed
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"strings"
 )
@@ -19,7 +18,7 @@ import (
 //		}
 //		switch l := line.(type) {
 //		case seed.Header:
-//			fmt.Printf("header: level=%d text=%q\n", l.Level, l.Text)
+//			fmt.Printf("header: level=%d text=%s\n", l.Level, l.Text)
 //		case seed.Text:
 //			fmt.Printf("text: text=%s\n", string(l))
 //		default:
@@ -30,7 +29,6 @@ import (
 // As can be seen above, the Reader reads a single line at a time. Type switches
 // or type assertions can be to gather info on the line.
 type Reader struct {
-	r  io.Reader
 	br *bufio.Reader
 	q  bool // quote block
 	c  bool // code block
@@ -38,7 +36,7 @@ type Reader struct {
 
 // NewReader returns a new Reader reading from r.
 func NewReader(r io.Reader) *Reader {
-	return &Reader{r: r, br: bufio.NewReader(r)}
+	return &Reader{br: bufio.NewReader(r)}
 }
 
 // ReadLine reads a single line from r.
@@ -93,11 +91,7 @@ func (sr *Reader) ReadBlock() (txts []Text, err error) {
 		if err != nil && err != io.EOF {
 			return
 		}
-		txt, ok := line.(Text)
-		if !ok { // not possible ¯\_(ツ)_/¯
-			err = errors.New("non text line found in block")
-			return
-		}
+		txt := line.(Text)
 		txts = append(txts, txt)
 		if err == io.EOF {
 			break

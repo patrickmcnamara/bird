@@ -9,6 +9,7 @@ import (
 // Writer writes documents in the Seed format.
 //
 // Doc:
+//
 //	# Lorem ipsum
 //
 //	>>>
@@ -21,6 +22,7 @@ import (
 //	=> Lorem ipsum ||| https://en.wikipedia.org/wiki/Lorem_ipsum
 //
 // Code:
+//
 //	sw := seed.NewWriter(...)
 //	sw.Header(1, "Lorem ipsum")
 //	sw.Break()
@@ -66,13 +68,13 @@ func (sw *Writer) Header(level int, txt string) (err error) {
 	return
 }
 
-// Link writes a link line to w, with a given text and URL.
-func (sw *Writer) Link(txt, url string) (err error) {
+// Link writes a link line to w, with a given text and BL or URL.
+func (sw *Writer) Link(txt, l string) (err error) {
 	if sw.InBlock() {
 		err = ErrBadLine
 		return
 	}
-	_, err = fmt.Fprintf(sw.w, "=> %s ||| %s\n", txt, url)
+	_, err = fmt.Fprintf(sw.w, "=> %s ||| %s\n", txt, l)
 	return
 }
 

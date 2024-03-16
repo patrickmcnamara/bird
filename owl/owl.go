@@ -5,8 +5,8 @@ package owl
 import (
 	"errors"
 	"io/fs"
-	"net/url"
 
+	"github.com/patrickmcnamara/bird/bl"
 	"github.com/patrickmcnamara/bird/seed"
 )
 
@@ -29,34 +29,36 @@ func NewFileServer(fsys fs.FS, errHn ErrorHandler) (fsrv *FileServer, err error)
 	return
 }
 
-// ServeBird serves the requested Seed document.
+// ServeBird serves the requested Bird page from a filesystem Seed document.
 //
-// Only files that end in seed.Extension are served. However, Bird request URLs
-// must omit the extension. If the URL path refers to a directory, a file with
-// the name of just seed.Extension will be served if it exists.
+// Only files that end in seed.Extension are served. However, request Bird links
+// must omit the extension. If the BL path refers to a directory, a file with
+// the name of seed.Extension in that directory will be served if it exists.
 //
 // Filesystem:
-//	abc
+//
+//	abc/
 //	abc/.sd
 //	abc/1.sd
-//	xyz
+//	xyz/
 //	xyz/.sd
 //	xyz.sd
 //
 // For this filesystem, where * is the host, ServeBird would respond as such:
+//
 //	bird://*/abc       ->  abc/.sd
 //	bird://*/abc/1     ->  abc/1.sd
 //	bird://*/xyz       ->  xyz.sd
 //
 // If an error occurs opening a requested file, ErrHn is called using the error
-// and u and sw from the request and the error that occured. If ErrHn is nil,
+// and b and sw from the request and the error that occured. If ErrHn is nil,
 // the error is skipped and no response is made.
-func (fsrv *FileServer) ServeBird(u *url.URL, sw *seed.Writer) {
+func (fsrv *FileServer) ServeBird(b bl.BL, sw *seed.Writer) {
 	// open correct file
-	f, err := fsrv.open(u.Path)
+	f, err := fsrv.open(b.Path)
 	// check for errors with file opening
 	if err != nil {
-		fsrv.errHn(u, sw, err)
+		fsrv.errHn(b, sw, err)
 		return
 	}
 	// serve file
@@ -90,8 +92,8 @@ func (fsrv *FileServer) open(name string) (f fs.File, err error) {
 }
 
 // errHn calls ErrHn if it's not nil.
-func (fsrv *FileServer) errHn(u *url.URL, sw *seed.Writer, err error) {
+func (fsrv *FileServer) errHn(b bl.BL, sw *seed.Writer, err error) {
 	if fsrv.ErrHn != nil {
-		fsrv.ErrHn(u, sw, err)
+		fsrv.ErrHn(b, sw, err)
 	}
 }
